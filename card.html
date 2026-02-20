@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Analytics | Track my Medi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: white; overflow-x: hidden; }
+        .bg-glow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 10%, rgba(16, 185, 129, 0.1), transparent 60%); z-index: -2; }
+        .glass-panel { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        
+        /* The "Pill Hologram" Feature */
+        .pill-container { height: 120px; display: flex; align-items: center; justify-content: center; perspective: 1000px; }
+        .pill { width: 80px; height: 35px; border-radius: 50px; position: relative; transform-style: preserve-3d; animation: float 4s ease-in-out infinite; }
+        .pill::before { content: ''; position: absolute; left: 0; width: 50%; height: 100%; border-radius: 50px 0 0 50px; background: currentColor; filter: brightness(1.2); }
+        .pill::after { content: ''; position: absolute; right: 0; width: 50%; height: 100%; border-radius: 0 50px 50px 0; background: rgba(255,255,255,0.2); }
+        
+        @keyframes float { 0%, 100% { transform: translateY(0) rotateX(0deg) rotate(15deg); } 50% { transform: translateY(-15px) rotateX(20deg) rotate(20deg); } }
+        
+        .safety-grade { font-size: 3rem; font-weight: 900; background: linear-gradient(180deg, #fff 30%, rgba(255,255,255,0.2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-glow"></div>
+
+    <div class="w-full max-w-lg animate__animated animate__fadeInUp animate__faster">
+        
+        <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-white font-bold mb-6 transition-all bg-white/5 px-4 py-2 rounded-xl group">
+            <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            Dashboard
+        </a>
+
+        <div class="glass-panel rounded-[2.5rem] overflow-hidden relative border border-white/10">
+            
+            <div id="cardHeaderBg" class="h-40 bg-gradient-to-br from-slate-800 to-slate-950 relative p-8 flex justify-between items-start transition-all duration-700">
+                <div>
+                    <div class="bg-black/20 backdrop-blur-md px-3 py-1 rounded-lg text-[9px] font-black tracking-[0.2em] uppercase border border-white/10 text-white/70 mb-2">
+                        System Health Analysis
+                    </div>
+                    <h2 id="medName" class="text-3xl font-extrabold tracking-tight text-white leading-tight">Loading...</h2>
+                    <p id="medCat" class="text-emerald-400 font-bold uppercase tracking-widest text-[10px] mt-1">...</p>
+                </div>
+                
+                <div class="flex flex-col items-end">
+                    <span id="safetyGrade" class="safety-grade">--</span>
+                    <span class="text-[9px] font-bold text-white/40 uppercase">Safety Rank</span>
+                </div>
+            </div>
+
+            <div class="pill-container -mt-10 bg-gradient-to-b from-transparent to-black/20">
+                <div id="pillVisual" class="pill text-emerald-500"></div>
+            </div>
+
+            <div class="p-8 pt-2">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white/5 p-4 rounded-3xl border border-white/5">
+                        <span class="text-slate-500 text-[9px] uppercase tracking-widest font-black block mb-1">Expiry Date</span>
+                        <span id="medExpiry" class="font-bold text-lg text-white">-- -- --</span>
+                    </div>
+                    <div class="bg-white/5 p-4 rounded-3xl border border-white/5">
+                        <span class="text-slate-500 text-[9px] uppercase tracking-widest font-black block mb-1">Vault Status</span>
+                        <span id="statusText" class="font-bold text-lg text-emerald-400">Stable</span>
+                    </div>
+                </div>
+
+                <div class="bg-white/5 p-5 rounded-3xl border border-white/5 mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Life Cycle</span>
+                        <span id="daysLeft" class="text-xs font-black bg-white/10 px-3 py-1 rounded-full text-white">--</span>
+                    </div>
+                    <div class="w-full h-3 bg-black/50 rounded-full p-1 border border-white/5">
+                        <div id="progressBar" class="h-full rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="disposalGuideBox" class="bg-white/5 p-5 rounded-3xl border border-dashed border-white/10 flex gap-4 items-start">
+                    <div id="disposalIcon" class="bg-emerald-500/20 p-2 rounded-xl text-emerald-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <p id="disposalText" class="text-slate-400 text-xs leading-relaxed font-medium">Analyzing disposal protocol for this medicine category...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 mt-8">
+            <button onclick="markUsed()" class="flex-1 bg-white hover:bg-slate-200 text-black font-black py-5 rounded-[1.5rem] transition-all text-xs uppercase tracking-widest active:scale-95 flex justify-center items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                Confirm Usage
+            </button>
+            <button id="restockBtn" onclick="restockMed()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-[1.5rem] transition-all text-xs uppercase tracking-widest active:scale-95 flex justify-center items-center gap-2 shadow-xl shadow-emerald-900/20">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M16 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
+                Restock Med
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cardData = JSON.parse(localStorage.getItem('activeCardData'));
+            
+            if (!cardData) {
+                document.body.innerHTML = "<div class='text-white font-bold'>Error: No Medicine Selected.</div>";
+                return;
+            }
+
+            // Populate Text
+            document.getElementById('medName').innerText = cardData.name;
+            document.getElementById('medCat').innerText = cardData.cat;
+            
+            const dateObj = new Date(cardData.expiry);
+            document.getElementById('medExpiry').innerText = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+            // Dynamic Styling Logic
+            const header = document.getElementById('cardHeaderBg');
+            const pill = document.getElementById('pillVisual');
+            const safety = document.getElementById('safetyGrade');
+            const prog = document.getElementById('progressBar');
+            const statusLabel = document.getElementById('statusText');
+            const daysLabel = document.getElementById('daysLeft');
+            const restockBtn = document.getElementById('restockBtn');
+
+            if (cardData.statusColor === "red") {
+                // EXPIRED
+                header.className = "h-40 bg-gradient-to-br from-red-600 to-red-950 relative p-8 flex justify-between items-start";
+                pill.className = "pill text-red-500 opacity-50";
+                safety.innerText = "F";
+                safety.className = "safety-grade text-red-400";
+                prog.className = "h-full rounded-full bg-red-600 w-full";
+                statusLabel.innerText = "DANGER";
+                statusLabel.className = "font-bold text-lg text-red-500";
+                daysLabel.innerText = "Expired";
+                daysLabel.className = "text-xs font-black bg-red-500/20 px-3 py-1 rounded-full text-red-400";
+                restockBtn.innerHTML = `<span>Buy Replacement</span>`;
+                
+            } else if (cardData.statusColor === "yellow") {
+                // WARNING
+                header.className = "h-40 bg-gradient-to-br from-yellow-500 to-yellow-900 relative p-8 flex justify-between items-start";
+                pill.className = "pill text-yellow-500";
+                safety.innerText = "C";
+                safety.className = "safety-grade text-yellow-400";
+                statusLabel.innerText = "CRITICAL";
+                statusLabel.className = "font-bold text-lg text-yellow-500";
+                daysLabel.innerText = `${cardData.days}d Left`;
+                setTimeout(() => prog.style.width = "25%", 100);
+                prog.className = "h-full rounded-full bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]";
+                
+            } else {
+                // EXCELLENT
+                safety.innerText = "A+";
+                daysLabel.innerText = `${cardData.days} Days`;
+                setTimeout(() => prog.style.width = "85%", 100);
+            }
+
+            // Smart Disposal Content
+            const dispText = document.getElementById('disposalText');
+            const cat = cardData.cat.toLowerCase();
+            if (cat.includes('syrup') || cat.includes('drop')) {
+                dispText.innerHTML = "<strong>Liquid Protocol:</strong> Do not flush. Mix with coffee grounds, seal in a bag, and use the <b>IMC Yellow Bin</b>.";
+            } else if (cat.includes('antibiotic')) {
+                dispText.innerHTML = "<strong>Antibiotic Alert:</strong> Finish full course. If expired, return to a medical take-back center to prevent resistance.";
+            } else {
+                dispText.innerHTML = "<strong>Standard Protocol:</strong> Remove from original pack, crush, and dispose in <b>IMC Yellow Bin</b>.";
+            }
+        });
+
+        function restockMed() {
+            const cardData = JSON.parse(localStorage.getItem('activeCardData'));
+            const query = encodeURIComponent(cardData.name + " medicine near me");
+            window.open(`https://www.google.com/search?q=${query}`, '_blank');
+        }
+
+        function markUsed() {
+            if(confirm("Confirm this medicine has been used or disposed?")) {
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+</html>

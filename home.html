@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Track my Medi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; background: #020617; color: white; overflow-x: hidden; }
+        
+        /* 3D Background Depth */
+        .bg-glow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.1), transparent 40%), radial-gradient(circle at 85% 30%, rgba(5, 150, 105, 0.05), transparent 50%); z-index: -2; }
+        
+        /* Glassmorphism */
+        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); border: 1px solid rgba(16, 185, 129, 0.15); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        
+        /* 3D Tilt Card Base Setup */
+        .perspective-container { perspective: 1000px; }
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+            will-change: transform;
+        }
+        /* Inner elements pop out in 3D */
+        .tilt-content { transform: translateZ(30px); }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-6 lg:p-8">
+
+    <div class="bg-glow"></div>
+
+    <div class="max-w-7xl mx-auto">
+        
+        <nav class="glass-panel rounded-[2rem] p-5 mb-8 flex justify-between items-center animate__animated animate__fadeInDown tilt-card" id="headerNav">
+            <div class="flex items-center gap-4 tilt-content">
+                <div class="bg-emerald-500/20 p-3 rounded-2xl border border-emerald-500/30">
+                    <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 10.5h-5.5V5h-3v5.5H5v3h5.5V19h3v-5.5H19v-3z"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-extrabold tracking-tight">Track my <span class="text-emerald-400">Medi</span></h2>
+                    <p class="text-xs text-slate-400 font-medium" id="userEmailDisplay">Loading User...</p>
+                </div>
+            </div>
+            <div class="flex gap-4 tilt-content">
+                <button onclick="window.print()" class="hidden sm:block px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-bold transition">🖨️ Print Vault</button>
+                <button id="logoutBtn" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-6 py-2 rounded-xl text-sm font-bold transition">Logout</button>
+            </div>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 perspective-container">
+            
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-panel p-8 rounded-[2rem] animate__animated animate__fadeInLeft">
+                    <h3 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <span class="text-emerald-400">➕</span> Add to Vault
+                    </h3>
+                    <form id="addMedForm" class="space-y-5">
+                        <div class="group">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-emerald-400">Medicine Name</label>
+                            <input type="text" id="medName" required placeholder="e.g. Paracetamol 500mg" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder-slate-600 outline-none focus:border-emerald-500 transition-all">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="group">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-emerald-400">Category</label>
+                                <select id="medCat" class="w-full bg-[#020617] border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-emerald-500 transition-all">
+                                    <option>Tablet</option><option>Syrup</option><option>Ointment</option><option>Drops</option>
+                                </select>
+                            </div>
+                            <div class="group">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 ml-1 group-focus-within:text-emerald-400">Expiry Date</label>
+                                <input type="date" id="medExpiry" required class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-emerald-500 transition-all [color-scheme:dark]">
+                            </div>
+                        </div>
+                        <button type="submit" id="addBtn" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-lg py-4 rounded-2xl hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all transform active:scale-95">
+                            Secure Data
+                        </button>
+                    </form>
+                </div>
+
+                <div class="glass-panel p-6 rounded-[2rem] border-l-4 border-yellow-500/50 animate__animated animate__fadeInUp animate__delay-1s">
+                    <h4 class="text-yellow-500 font-extrabold mb-3 flex items-center gap-2 text-lg">♻️ IMC Disposal Protocol</h4>
+                    <div class="space-y-2 text-sm text-slate-300">
+                        <p>• <span class="text-white font-bold">Never flush</span> syrups down the sink.</p>
+                        <p>• Hand expired packets directly to the <span class="bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded font-bold">Yellow Bin</span> of Indore Nagar Nigam vans.</p>
+                        <p>• Crush loose tablets & mix with coffee grounds before disposal.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                <div class="flex justify-between items-end mb-6">
+                    <h3 class="text-3xl font-extrabold tracking-tight">Active <span class="text-emerald-500">Inventory</span></h3>
+                    <div class="flex gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse" title="Expired"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500 animate-pulse animate__delay-1s" title="Expiring Soon"></div>
+                        <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse animate__delay-2s" title="Safe"></div>
+                    </div>
+                </div>
+
+                <div id="medGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6 perspective-container">
+                    <div class="text-slate-500 text-center col-span-full py-10 animate-pulse">Loading secure vault...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDKHMBa4jCQGcVMbidd04Uz7dU_SGDVe7Y",
+            authDomain: "code-crack-22b9b.firebaseapp.com",
+            projectId: "code-crack-22b9b",
+            storageBucket: "code-crack-22b9b.firebasestorage.app",
+            messagingSenderId: "894383472356",
+            appId: "1:894383472356:web:7d60b442772a45d22636f1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        // 1. Auth State Observer
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('userEmailDisplay').innerText = `Vault: ${user.email}`;
+                loadMedicines(); // Load data only after user is confirmed
+            } else {
+                window.location.href = "login.html"; // Redirect if not logged in
+            }
+        });
+
+        // 2. Logout Logic
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => { window.location.href = "login.html"; });
+        });
+
+        // 3. Add Medicine to Firestore
+        document.getElementById('addMedForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('addBtn');
+            btn.innerText = "Encrypting & Saving...";
+            
+            try {
+                await addDoc(collection(db, "medicines"), {
+                    userId: currentUser.uid,
+                    name: document.getElementById('medName').value,
+                    category: document.getElementById('medCat').value,
+                    expiryDate: document.getElementById('medExpiry').value,
+                    createdAt: serverTimestamp()
+                });
+                document.getElementById('addMedForm').reset();
+            } catch (error) {
+                alert("Error adding medicine: " + error.message);
+            }
+            btn.innerText = "Secure Data";
+        });
+
+        // 4. Real-time Listener & Rendering
+        function loadMedicines() {
+            const q = query(collection(db, "medicines"), orderBy("expiryDate", "asc"));
+            
+            onSnapshot(q, (snapshot) => {
+                const grid = document.getElementById('medGrid');
+                grid.innerHTML = "";
+                
+                let medsFound = false;
+
+                snapshot.forEach((docSnapshot) => {
+                    const med = docSnapshot.data();
+                    if(med.userId !== currentUser.uid) return; // Only show logged-in user's meds
+                    
+                    medsFound = true;
+                    const id = docSnapshot.id;
+                    
+                    // Expiry Math
+                    const today = new Date();
+                    // Strip time from today to just compare dates accurately
+                    today.setHours(0,0,0,0); 
+                    const expDate = new Date(med.expiryDate);
+                    const diffTime = expDate - today;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    // Dynamic Styling Logic
+                    let themeClass = "border-emerald-500/30";
+                    let badgeClass = "bg-emerald-500/10 text-emerald-400";
+                    let statusText = "Safe to Use";
+                    let progressColor = "bg-emerald-500";
+                    let progressWidth = Math.min(100, (diffDays / 365) * 100);
+
+                    if (diffDays < 0) {
+                        themeClass = "border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.15)]";
+                        badgeClass = "bg-red-500/20 text-red-400 font-bold animate-pulse";
+                        statusText = "EXPIRED - DISPOSE";
+                        progressColor = "bg-red-500";
+                        progressWidth = 100;
+                    } else if (diffDays <= 30) {
+                        themeClass = "border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.15)]";
+                        badgeClass = "bg-yellow-500/20 text-yellow-400 font-bold";
+                        statusText = "Expiring Soon";
+                        progressColor = "bg-yellow-500";
+                        progressWidth = Math.max(10, (diffDays / 30) * 100); // Scale 30 days to 100%
+                    }
+
+                    // Card HTML Construction (Notice the tilt-card classes)
+                    grid.innerHTML += `
+                        <div class="glass-panel p-6 rounded-[2rem] border-t-2 ${themeClass} tilt-card animate__animated animate__zoomIn">
+                            <div class="tilt-content">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h4 class="text-xl font-bold text-white mb-1 truncate">${med.name}</h4>
+                                        <span class="text-xs font-bold uppercase tracking-widest text-slate-500">${med.category}</span>
+                                    </div>
+                                    <span class="${badgeClass} px-3 py-1 rounded-full text-[10px] uppercase tracking-wider">${statusText}</span>
+                                </div>
+                                
+                                <div class="bg-black/20 p-4 rounded-2xl mb-4 border border-white/5">
+                                    <div class="flex justify-between text-xs mb-2">
+                                        <span class="text-slate-400">Stability Timeline</span>
+                                        <span class="text-white font-bold">${diffDays < 0 ? 'Danger' : diffDays + ' Days Left'}</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                        <div class="h-full ${progressColor} transition-all duration-1000" style="width: ${progressWidth}%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-slate-400 font-mono bg-white/5 px-2 py-1 rounded-lg">Exp: ${med.expiryDate}</span>
+                                    <button onclick="deleteMedicine('${id}')" class="text-slate-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 p-2 rounded-xl transition-colors" title="Remove from vault">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if(!medsFound) grid.innerHTML = `<div class="text-slate-500 text-center col-span-full py-10">Your vault is empty. Add medicines to start tracking.</div>`;
+                
+                // Attach 3D Vanilla JS logic to newly created cards
+                init3DTilt();
+            });
+        }
+
+        // 5. Delete Function (Global Scope for inline onclick)
+        window.deleteMedicine = async (id) => {
+            if(confirm("Permanently remove this medicine from vault?")) {
+                await deleteDoc(doc(db, "medicines", id));
+            }
+        };
+
+        // 6. Vanilla JS 3D Tilt Logic
+        function init3DTilt() {
+            const cards = document.querySelectorAll('.tilt-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left; // x position within the element
+                    const y = e.clientY - rect.top;  // y position within the element
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    // Calculate rotation (max 10 degrees)
+                    const rotateX = ((y - centerY) / centerY) * -10;
+                    const rotateY = ((x - centerX) / centerX) * 10;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    // Reset smoothly
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                });
+            });
+        }
+
+        // Initialize tilt for static elements on load
+        window.addEventListener('DOMContentLoaded', init3DTilt);
+    </script>
+</body>
+</html>
